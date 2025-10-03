@@ -16,6 +16,7 @@ import { DatabaseService } from './services'
             useClass: HttpExceptionFilter
         },
         DatabaseService
-    ]
+    ],
+    exports: [DatabaseService]
 })
 export class CommonModule {}
