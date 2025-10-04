@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { DatabaseService } from 'src/common/services'
-import { CreateTaskDto } from './tasks.dto'
+import { CreateTaskDto, UpdateTaskDto } from './tasks.dto'
 
 @Injectable()
 export class TasksService {
@@ -36,6 +36,44 @@ export class TasksService {
             return newTask
         } catch (error) {
             throw new Error(`Failed to create task: ${error.message}`)
+        }
+    }
+
+    async updateTask(id: number, updateTaskDto: UpdateTaskDto) {
+        try {
+            const updatedTask = await this.databaseService.task.update({
+                where: { id },
+                data: updateTaskDto,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true
+                        }
+                    }
+                }
+            })
+            return updatedTask
+        } catch (error) {
+            if (error.code === 'P2025') {
+                throw new Error('Task not found')
+            }
+            throw new Error(`Failed to update task: ${error.message}`)
+        }
+    }
+
+    async deleteTask(id: number) {
+        try {
+            const taskDelete = await this.databaseService.task.delete({
+                where: { id }
+            })
+            return taskDelete
+        } catch (error) {
+            if (error.code === 'P2025') {
+                throw new Error('Task not found')
+            }
+            throw new Error(`Failed to delete task: ${error.message}`)
         }
     }
 }

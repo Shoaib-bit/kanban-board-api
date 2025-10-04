@@ -61,13 +61,18 @@ export class TasksController {
     }
 
     @Patch(':id')
-    async updateTask(
-        @Req() req,
-        @Param('id') id: string,
-        @Body() dto: UpdateTaskDto
-    ) {
+    async updateTask(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
         try {
-            //Todo
+            const updatedTask = await this.tasksService.updateTask(
+                Number(id),
+                dto
+            )
+
+            return {
+                success: true,
+                message: 'Task Updated Successfully',
+                data: updatedTask
+            }
         } catch (error) {
             if (error.message) {
                 throw new BadRequestException(error.message)
@@ -79,9 +84,15 @@ export class TasksController {
     }
 
     @Delete(':id')
-    async deleteTask(@Req() req, @Param('id') id: string) {
+    async deleteTask(@Param('id') id: number) {
         try {
-            //Todo
+            await this.tasksService.deleteTask(Number(id))
+
+            return {
+                message: 'Task Delete Successfully',
+                success: true,
+                data: null
+            }
         } catch (error) {
             if (error.message) {
                 throw new BadRequestException(error.message)
