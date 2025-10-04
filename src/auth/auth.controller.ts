@@ -13,10 +13,29 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('login')
-    login(@Body() loginDto: LoginDto) {
+    async login(@Body() loginDto: LoginDto) {
         try {
-            //Todo will implement
-            console.log(loginDto)
+            const user = await this.authService.loginUser(
+                loginDto.email,
+                loginDto.password
+            )
+
+            const payload = {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
+
+            const token = await this.authService.accessToken(payload)
+
+            return {
+                message: 'Login Successfully',
+                success: true,
+                data: {
+                    user: payload,
+                    accessToken: token.access_token
+                }
+            }
         } catch (error) {
             if (error.message) {
                 throw new BadRequestException(error.message)
