@@ -1,98 +1,350 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Kanban Board API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust NestJS backend API for a Kanban board task management application with authentication, built with Prisma ORM and PostgreSQL database.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **User Authentication**: JWT-based authentication with secure login and registration
+- **Task Management**: Full CRUD operations for tasks with different statuses
+- **Database Integration**: PostgreSQL database with Prisma ORM
+- **API Documentation**: Interactive Swagger/OpenAPI documentation
+- **Input Validation**: Class-validator for request validation
+- **Security**: Password hashing with bcrypt
+- **CORS Support**: Cross-origin resource sharing enabled
+- **Type Safety**: Full TypeScript support
+- **Code Quality**: ESLint and Prettier configuration
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🏗️ Architecture
 
-## Project setup
+### Database Schema
 
-```bash
-$ npm install
+The application uses PostgreSQL with the following models:
+
+#### User Model
+
+```prisma
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @db.VarChar(100)
+  email    String  @unique @db.VarChar(200)
+  password String
+  tasks    Task[]
+}
 ```
 
-## Compile and run the project
+#### Task Model
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```prisma
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  status      Status   @default(todo)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
 ```
 
-## Run tests
+#### Status Enum
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```prisma
+enum Status {
+  todo
+  in_progress
+  done
+}
 ```
 
-## Deployment
+### API Endpoints
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+#### Authentication (`/api`)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- `POST /login` - User login
+- `POST /signup` - User registration
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+#### Tasks (`/api/tasks`) - Protected routes
+
+- `GET /tasks` - Get all tasks
+- `POST /tasks` - Create a new task
+- `GET /tasks/:id` - Get task by ID
+- `PATCH /tasks/:id` - Update task
+- `DELETE /tasks/:id` - Delete task
+
+### Project Structure
+
+```
+src/
+├── auth/               # Authentication module
+│   ├── auth.controller.ts
+│   ├── auth.service.ts
+│   ├── auth.dto.ts
+│   ├── auth.interface.ts
+│   └── auth.module.ts
+├── tasks/              # Tasks module
+│   ├── tasks.controller.ts
+│   ├── tasks.service.ts
+│   ├── tasks.dto.ts
+│   └── tasks.module.ts
+├── common/             # Shared components
+│   ├── guards/         # Authentication guards
+│   ├── filters/        # Exception filters
+│   ├── services/       # Database service
+│   └── utils/          # Utility functions
+├── app.module.ts       # Root module
+└── main.ts            # Application entry point
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 📋 Prerequisites
 
-## Resources
+Before you begin, ensure you have the following installed:
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Node.js** (v18 or higher)
+- **npm** or **yarn**
+- **PostgreSQL** (v13 or higher)
+- **Git**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 🛠️ Installation & Setup
 
-## Support
+### 1. Clone the Repository
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+git clone <repository-url>
+cd kanban-board-api
+```
 
-## Stay in touch
+### 2. Install Dependencies
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm install
+```
 
-## License
+### 3. Environment Configuration
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Create a `.env` file in the root directory and add the following environment variables:
+
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/kanban_board_db"
+
+# JWT
+JWT_SECRET="your-super-secret-jwt-key-here"
+
+# Application
+PORT=8000
+```
+
+**Important**: Replace the database credentials and JWT secret with your actual values.
+
+### 4. Database Setup
+
+#### Option A: Using Docker (Recommended)
+
+If you have Docker installed, you can quickly set up PostgreSQL:
+
+```bash
+# Run PostgreSQL container
+docker run --name kanban-postgres \
+  -e POSTGRES_DB=kanban_board_db \
+  -e POSTGRES_USER=your_username \
+  -e POSTGRES_PASSWORD=your_password \
+  -p 5432:5432 \
+  -d postgres:15
+```
+
+#### Option B: Local PostgreSQL Installation
+
+1. Install PostgreSQL on your system
+2. Create a new database:
+    ```sql
+    CREATE DATABASE kanban_board_db;
+    ```
+3. Update the `DATABASE_URL` in your `.env` file with your credentials
+
+### 5. Database Migration
+
+Generate and apply the database schema:
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate dev --name init
+
+# (Optional) View your database
+npx prisma studio
+```
+
+### 6. Start the Application
+
+#### Development Mode
+
+```bash
+npm run start:dev
+```
+
+#### Production Mode
+
+```bash
+# Build the application
+npm run build
+
+# Start in production
+npm run start:prod
+```
+
+The API will be available at `http://localhost:8000`
+
+## 📚 API Documentation
+
+Once the application is running, you can access the interactive API documentation at:
+
+```
+http://localhost:8000/docs
+```
+
+This provides a complete Swagger UI where you can test all endpoints directly.
+
+## 🧪 Testing the API
+
+### 1. User Registration
+
+```bash
+curl -X POST http://localhost:8000/api/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+### 2. User Login
+
+```bash
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+Save the returned JWT token for authenticated requests.
+
+### 3. Create a Task
+
+```bash
+curl -X POST http://localhost:8000/api/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "title": "Complete project setup",
+    "description": "Set up the kanban board API",
+    "status": "todo"
+  }'
+```
+
+### 4. Get All Tasks
+
+```bash
+curl -X GET http://localhost:8000/api/tasks \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run start:dev        # Start with hot reload
+npm run start:debug      # Start with debug mode
+
+# Building
+npm run build           # Build for production
+npm run start:prod      # Run production build
+
+# Code Quality
+npm run lint            # Run ESLint
+npm run format          # Format code with Prettier
+
+# Testing
+npm run test            # Run unit tests
+npm run test:watch      # Run tests in watch mode
+npm run test:cov        # Run tests with coverage
+npm run test:e2e        # Run end-to-end tests
+
+# Database
+npx prisma studio       # Open Prisma Studio
+npx prisma generate     # Generate Prisma client
+npx prisma migrate dev  # Run migrations in development
+npx prisma migrate reset # Reset database
+```
+
+## 🛡️ Security Features
+
+- **Password Security**: Passwords are hashed using bcrypt
+- **JWT Authentication**: Secure token-based authentication
+- **Input Validation**: All inputs are validated using class-validator
+- **CORS Protection**: Configurable CORS policies
+- **Environment Variables**: Sensitive data stored in environment variables
+
+## 📝 Technologies Used
+
+- **Framework**: NestJS
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT
+- **Validation**: class-validator, class-transformer
+- **Documentation**: Swagger/OpenAPI
+- **Password Hashing**: bcrypt
+- **Language**: TypeScript
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the UNLICENSED License.
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Error**
+    - Verify PostgreSQL is running
+    - Check DATABASE_URL in .env file
+    - Ensure database exists
+
+2. **Prisma Client Not Found**
+
+    ```bash
+    npx prisma generate
+    ```
+
+3. **Port Already in Use**
+    - Change PORT in .env file
+    - Or kill the process using the port
+
+4. **JWT Token Issues**
+    - Verify JWT_SECRET in .env file
+    - Check token format in Authorization header
+
+### Debug Mode
+
+Run the application in debug mode for detailed logging:
+
+```bash
+npm run start:debug
+```
+
+## 📞 Support
+
+For questions and support, please open an issue in the repository or contact the development team.
