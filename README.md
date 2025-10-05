@@ -124,8 +124,12 @@ npm install
 Create a `.env` file in the root directory and add the following environment variables:
 
 ```env
-# Database
+# Database Sample
 DATABASE_URL="postgresql://username:password@localhost:5432/kanban_board_db"
+
+use this
+DATABASE_URL="postgresql://postgres:@localhost:5432/kanban_board_db"
+
 
 # JWT
 JWT_SECRET="your-super-secret-jwt-key-here"
